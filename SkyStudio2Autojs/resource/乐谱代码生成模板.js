@@ -34,8 +34,8 @@ function c6() {press(x[4],y[2],1);}
 /*window*/var window = floaty.window(<frame><vertical><button id="btn" text='开始'/><horizontal><button id="speedLow" text='减速' w="80"/><button id="speedHigh" text='加速' w="80"/></horizontal><horizontal><button id="speed" text='1.0x' w="80"/><button id="stop" text='停止' w="80"/></horizontal></vertical></frame>);
 window.exitOnClose();
 window.btn.click(()=>{if(stop) {stop = 0;window.btn.setText('暂停');}else{stop = 1;window.btn.setText('继续');}})
-window.speedHigh.click(()=>{(speedControl*10+1)/10;window.speed.setText(speedControl+'x');})
-window.speedLow.click(()=>{if(speedControl<=0.1){return;}(speedControl*10-1)/10;window.speed.setText(speedControl+'x');})
+window.speedHigh.click(()=>{speedControl=(speedControl*10+1)/10;window.speed.setText(speedControl+'x');})
+window.speedLow.click(()=>{if(speedControl<=0.1){return;}speedControl=(speedControl*10-1)/10;window.speed.setText(speedControl+'x');})
 window.speed.click(()=>{speedControl=1;window.speed.setText(speedControl+'x');})
 window.stop.click(()=>{engines.stopAll();})
 function start() {while (stop) {sleep(100);}}

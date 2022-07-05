@@ -35,6 +35,7 @@ static const char* timeFunc[] =
 };
 
 #define TEMPSIZE 32
+#define VERSION "2.2"
 
 
 int main(int argc, char* argv[])
@@ -92,7 +93,7 @@ int main(int argc, char* argv[])
 		}
 	}
 	
-	fprintf(stdout, "SkyStudio2Autojs [V2.1]\nCopyright (C) 2022 Chen Personal.\n\n");
+	fprintf(stdout, "SkyStudio2Autojs [V" VERSION "]\nCopyright (C) 2022 Chen Personal.\n\n");
 	
 	//参数验证
 	if (argc < 2)
