@@ -35,7 +35,7 @@ static const char* timeFunc[] =
 };
 
 #define TEMPSIZE 32
-#define VERSION "2.2"
+#define VERSION "2.3"
 
 
 int main(int argc, char* argv[])
@@ -98,6 +98,7 @@ int main(int argc, char* argv[])
 	//参数验证
 	if (argc < 2)
 	{
+		fprintf(stdout, "键入SkyStudio2Autojs /h\n来获得帮助\n\n");
 		system("start cmd.exe");
 		ret = -1;
 		goto end;
@@ -405,9 +406,8 @@ start://先处理命令行结果
 		while (i < argc)
 		{
 			wchar_t pTemp[TEMPSIZE];
-			long nowTime = 0, lastTime = 0, diffTime = 0;
-			long note = 0;
-			bool bWideChar = false;
+			long note = 0, nowTime = 0, lastTime = 0, diffTime = 0;
+			bool bWideChar, bWriteCode = true;
 
 			fprintf(stdout, "正在转换第%d个文件...\n从 %s\n到 ", ++lFileCount , argv[i]);
 
@@ -416,18 +416,12 @@ start://先处理命令行结果
 			if (hReadFile == INVALID_HANDLE_VALUE)
 			{
 				fprintf(stderr, "输入文件打开失败\n\n");
-				CloseHandle(hReadFile);
-				CloseHandle(hWriteFile);
-				++i;
-				continue;
+				goto continue_next;
 			}
 			if (hWriteFile == INVALID_HANDLE_VALUE)
 			{
 				fprintf(stderr, "输出文件创建失败\n\n");
-				CloseHandle(hReadFile);
-				CloseHandle(hWriteFile);
-				++i;
-				continue;
+				goto continue_next;
 			}
 
 			//宽字节字符集验证
@@ -435,9 +429,8 @@ start://先处理命令行结果
 				wchar_t wc;
 				if (!Read2Byte(hReadFile, &wc))
 				{
-					CloseHandle(hReadFile);
-					CloseHandle(hWriteFile);
-					goto end;
+					fprintf(stderr, "文件读取失败\n\n");
+					goto continue_next;
 				}
 				bWideChar = wc == 0xFEFF;
 
@@ -446,9 +439,8 @@ start://先处理命令行结果
 				{
 					if (!SetFilePointerEx(hReadFile, LARGE_INTEGER{ 0 }, NULL, FILE_BEGIN))
 					{
-						CloseHandle(hReadFile);
-						CloseHandle(hWriteFile);
-						goto end;
+						fprintf(stderr, "文件指针定位失败\n\n");
+						goto continue_next;
 					}
 				}
 			}
@@ -460,39 +452,45 @@ start://先处理命令行结果
 			{
 				if (!HandleRead2wStr(hReadFile, L"\"bpm\":"))
 				{
-					CloseHandle(hReadFile);
-					CloseHandle(hWriteFile);
-					goto end;
+					fprintf(stderr, "文件读取失败\n\n");
+					goto continue_next;
 				}
 				if (!HandleReadUntilwChar(hReadFile, L',', pTemp, TEMPSIZE))
 				{
-					CloseHandle(hReadFile);
-					CloseHandle(hWriteFile);
-					goto end;
+					fprintf(stderr, "文件读取失败\n\n");
+					goto continue_next;
 				}
 				if (IsUnsignedwNum(pTemp))
+				{
 					lOutParam[0] = 60000 / _wtol(pTemp);
+				}
 				else
-					goto end;
+				{
+					fprintf(stderr, "文件内容有误\n\n");
+					goto continue_next;
+				}
 			}
 			else
 			{
 				if (!HandleRead2Str(hReadFile, "\"bpm\":"))
 				{
-					CloseHandle(hReadFile);
-					CloseHandle(hWriteFile);
-					goto end;
+					fprintf(stderr, "文件读取失败\n\n");
+					goto continue_next;
 				}
 				if (!HandleReadUntilChar(hReadFile, ',', (char*)pTemp, TEMPSIZE))
 				{
-					CloseHandle(hReadFile);
-					CloseHandle(hWriteFile);
-					goto end;
+					fprintf(stderr, "文件读取失败\n\n");
+					goto continue_next;
 				}
 				if (IsUnsignedNum((char*)pTemp))
+				{
 					lOutParam[0] = 60000 / atol((char*)pTemp);
+				}
 				else
-					goto end;
+				{
+					fprintf(stderr, "文件内容有误\n\n");
+					goto continue_next;
+				}
 			}
 
 
@@ -511,34 +509,41 @@ start://先处理命令行结果
 				{
 					ltoa(lOutParam[k++], (char*)pTemp, 10);
 					ULONG ulLen = StrLen((char*)pTemp);
-					WriteNByte(hWriteFile, pTemp, ulLen);
+					bWriteCode = bWriteCode && WriteNByte(hWriteFile, pTemp, ulLen);
 				}
-				WriteNByte(hWriteFile, &pTemplaData[dwPosArr[j]], dwPosArr[j + 1] - dwPosArr[j]);
+				bWriteCode = bWriteCode && WriteNByte(hWriteFile, &pTemplaData[dwPosArr[j]], dwPosArr[j + 1] - dwPosArr[j]);
 			}
 
 			//生成js可选代码
 			if (bFindCmdR)
 			{
-				WriteNByte(hWriteFile, &pTemplaData[dwPosArr[12]], dwPosArr[12 + 1] - dwPosArr[12]);
+				bWriteCode = bWriteCode && WriteNByte(hWriteFile, &pTemplaData[dwPosArr[12]], dwPosArr[12 + 1] - dwPosArr[12]);
 			}
 			else
 			{
-				WriteNByte(hWriteFile, &pTemplaData[dwPosArr[14]], dwPosArr[14 + 1] - dwPosArr[14]);
+				bWriteCode = bWriteCode && WriteNByte(hWriteFile, &pTemplaData[dwPosArr[14]], dwPosArr[14 + 1] - dwPosArr[14]);
 			}
 
 			if (bFindCmdW)
 			{
-				WriteNByte(hWriteFile, &pTemplaData[dwPosArr[16]], dwPosArr[16 + 1] - dwPosArr[16]);
+				bWriteCode = bWriteCode && WriteNByte(hWriteFile, &pTemplaData[dwPosArr[16]], dwPosArr[16 + 1] - dwPosArr[16]);
 			}
 			else
 			{
-				WriteNByte(hWriteFile, &pTemplaData[dwPosArr[18]], dwPosArr[18 + 1] - dwPosArr[18]);
+				bWriteCode = bWriteCode && WriteNByte(hWriteFile, &pTemplaData[dwPosArr[18]], dwPosArr[18 + 1] - dwPosArr[18]);
 
 				ltoa(lCmdSVar, (char*)pTemp, 10);
 				ULONG ulLen = StrLen((char*)pTemp);
-				WriteNByte(hWriteFile, pTemp, ulLen);
+				bWriteCode = bWriteCode && WriteNByte(hWriteFile, pTemp, ulLen);
 
-				WriteNByte(hWriteFile, &pTemplaData[dwPosArr[20]], dwPosArr[20 + 1] - dwPosArr[20]);
+				bWriteCode = bWriteCode && WriteNByte(hWriteFile, &pTemplaData[dwPosArr[20]], dwPosArr[20 + 1] - dwPosArr[20]);
+			}
+
+			//代码生成检查
+			if (!bWriteCode)
+			{
+				fprintf(stderr, "文件写入失败\n\n");
+				goto continue_next;
 			}
 
 			//生成js乐谱弹奏部分
@@ -546,18 +551,16 @@ start://先处理命令行结果
 			{
 				if (!HandleRead2wStr(hReadFile, L"\"songNotes\":"))
 				{
-					CloseHandle(hReadFile);
-					CloseHandle(hWriteFile);
-					goto end;
+					fprintf(stderr, "文件读取失败\n\n");
+					goto continue_next;
 				}
 			}
 			else
 			{
 				if (!HandleRead2Str(hReadFile, "\"songNotes\":"))
 				{
-					CloseHandle(hReadFile);
-					CloseHandle(hWriteFile);
-					goto end;
+					fprintf(stderr, "文件读取失败\n\n");
+					goto continue_next;
 				}
 			}
 
@@ -573,9 +576,14 @@ start://先处理命令行结果
 						break;
 
 					if (IsUnsignedwNum(pTemp))
+					{
 						nowTime = _wtol(pTemp);
+					}
 					else
-						goto end;
+					{
+						fprintf(stderr, "文件内容有误\n\n");
+						goto continue_next;
+					}
 
 					if (!HandleRead2wStr(hReadFile, L"\"key\":\""))
 						break;
@@ -583,9 +591,14 @@ start://先处理命令行结果
 						break;
 
 					if (IsUnsignedwNum(&pTemp[4]))
+					{
 						note = _wtol(&pTemp[4]);
+					}
 					else
-						goto end;
+					{
+						fprintf(stderr, "文件内容有误\n\n");
+						goto continue_next;
+					}
 				}
 				else
 				{
@@ -595,9 +608,14 @@ start://先处理命令行结果
 						break;
 
 					if (IsUnsignedNum((char*)pTemp))
+					{
 						nowTime = atol((char*)pTemp);
+					}
 					else
-						goto end;
+					{
+						fprintf(stderr, "文件内容有误\n\n");
+						goto continue_next;
+					}
 
 					if (!HandleRead2Str(hReadFile, "\"key\":\""))
 						break;
@@ -605,9 +623,14 @@ start://先处理命令行结果
 						break;
 
 					if (IsUnsignedNum((char*)pTemp))
+					{
 						note = atol((char*)&pTemp[4]);
+					}
 					else
-						goto end;
+					{
+						fprintf(stderr, "文件内容有误\n\n");
+						goto continue_next;
+					}
 				}
 
 
@@ -630,12 +653,13 @@ start://先处理命令行结果
 				WriteNByte(hWriteFile, noteFunc[note], NOTESIZE);
 			}
 
+			fprintf(stdout, "转换成功！\n\n");
+
+		continue_next:
 			//关闭上一个文件，处理下一个
 			CloseHandle(hReadFile);
 			CloseHandle(hWriteFile);
 			++i;
-
-			fprintf(stdout, "转换成功！\n\n");
 		}
 
 	}
@@ -648,6 +672,7 @@ cmdlack:
 cmderr:
 	fprintf(stderr, "参数错误！\n\n");
 	ret = 2;
+	goto end;
 end:
 	CloseHandle(hConfig);
 	free(stConfig.pFolderPath);
