@@ -5,7 +5,7 @@
 如果出现bug请找 QQ:1060495688 反馈<br>
 
 Windows版：
-把要转换的（多个）skystudio乐谱拖动到SkyStudio2Autojs.exe上，就会自动进行转换，<br>
+把要转换的（多个）SkyStudio乐谱拖动到SkyStudio2Autojs.exe上，就会自动进行转换，<br>
 也可以双击程序打开交互模式进行转换、修改设置和导出辅助脚本。<br>
 如果提示失败或生成的文件是空文件，请检查源乐谱文件是不是未加密的json格式或ABC格式！<br>
 
