@@ -18,7 +18,7 @@ Android版：
 
 附：
 未加密的json格式乐谱示例：<br>
-[{"name":"示例乐谱","author":"Unknown","transcribedBy":"Unknown","isComposed":true,"bpm":480,"bitsPerPage":16,"pitchLevel":0,"isEncrypted":false,"songNotes":[{"time":0,"key":"2Key7"},{"time":500,"key":"2Key7"},{"time":1000,"key":"1Key0"},{"time":1000,"key":"1Key4"},{"time":1000,"key":"2Key11"},{"time":1500,"key":"2Key9"},{"time":2000,"key":"1Key0"},{"time":2000,"key":"1Key2"},{"time":2000,"key":"2Key9"}]}]<br>
+\[{"name":"示例乐谱","author":"Unknown","transcribedBy":"Unknown","isComposed":true,"bpm":480,"bitsPerPage":16,"pitchLevel":0,"isEncrypted":false,"songNotes":\[{"time":0,"key":"2Key7"},{"time":500,"key":"2Key7"},{"time":1000,"key":"1Key0"},{"time":1000,"key":"1Key4"},{"time":1000,"key":"2Key11"},{"time":1500,"key":"2Key9"},{"time":2000,"key":"1Key0"},{"time":2000,"key":"1Key2"},{"time":2000,"key":"2Key9"}]}]<br>
 
 ABC格式乐谱示例：<br>
 <DontCopyThisLine> 480 0 16<br>
